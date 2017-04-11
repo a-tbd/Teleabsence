@@ -1,0 +1,136 @@
+/*
+ * Tele-absence Robot
+ * 
+ * Telepresence robot that turns and runs away when approached.
+ */
+
+// Motor A
+const int motorPin1 = 5; // Pin 14 of L293D
+const int motorPin2 = 6; // Pin 10 of L293D
+
+// Motor B
+const int motorPin3 = 10; // Pin 7 of L293D
+const int motorPin4 = 9; // Pin 2 of L293Dt
+
+// Ultrasonic rangefinder 
+#define trigPin 12 // ping sender
+#define echoPin 11 // ping detection
+
+// obstruction counter
+int obs = 0;
+
+// This will only run once
+void setup() {
+  // Set pins as outputs
+  Serial.begin(9600);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  
+  pinMode(motorPin1, OUTPUT);
+  pinMode(motorPin2, OUTPUT);
+  pinMode(motorPin3, OUTPUT);
+  pinMode(motorPin4, OUTPUT);
+}
+
+void loop() {
+  // calculate distance from object
+  float duration, distance;
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  
+  duration = pulseIn(echoPin, HIGH);
+  distance = (duration/2) * 0.0344;
+
+  stopCar();
+
+  // turn right first two times approached
+  if (distance < 20 && obs < 2)
+  {
+    turnRight();
+    delay(500);
+    obs++;
+  }
+  // retreat if approached for a third time
+  else if (distance < 20 && obs == 2)
+  {
+    turnRight();
+    delay(1000);
+    forward();
+    delay(2000);
+    obs++;
+  }
+  // turn left if approached another two times
+  else if (distance < 20 && obs > 2 && obs < 6)
+  {
+    turnLeft();
+    delay(500);
+    obs++;
+  }
+  // retreat if approached again
+  else if (distance < 20 && obs == 6)
+  {
+    turnLeft();
+    delay(1000);
+    forward();
+    delay(2000);
+    obs = 0;
+  }
+}
+
+// Drives motor forward and avoids obstructions
+void forward()
+{
+  float duration, distance;
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  
+  duration = pulseIn(echoPin, HIGH);
+  distance = (duration/2) * 0.0344;
+
+  if (distance < 20)
+  {
+    stopCar();
+  }
+  else
+  {
+    digitalWrite(motorPin1, HIGH);
+    digitalWrite(motorPin2, LOW);
+    digitalWrite(motorPin3, LOW);
+    digitalWrite(motorPin4, HIGH);
+  }
+}
+
+// Left turn
+void turnLeft()
+{
+  digitalWrite(motorPin1, LOW);
+  digitalWrite(motorPin2, LOW);
+  digitalWrite(motorPin3, HIGH);
+  digitalWrite(motorPin4, LOW);
+}
+
+// Left right
+void turnRight()
+{
+  digitalWrite(motorPin1, LOW);
+  digitalWrite(motorPin2, HIGH);
+  digitalWrite(motorPin3, LOW);
+  digitalWrite(motorPin4, LOW);
+}
+
+// Stop
+void stopCar()
+{
+  digitalWrite(motorPin1, LOW);
+  digitalWrite(motorPin2, LOW);
+  digitalWrite(motorPin3, LOW);
+  digitalWrite(motorPin4, LOW);
+}
