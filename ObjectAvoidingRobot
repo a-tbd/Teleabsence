@@ -1,0 +1,129 @@
+/*
+ * Simple object avoiding robot
+ * 
+ * The code for the motors + driver is from mi.vasilakis
+ * https://codebender.cc/sketch:138613#L293D_Arduino_Tutorial.ino
+ */
+
+// Motor A
+const int motorPin1 = 5; // Pin 14 of L293D
+const int motorPin2 = 6; // Pin 10 of L293D
+
+// Motor B
+const int motorPin3 = 10; // Pin 7 of L293D
+const int motorPin4 = 9; // Pin 2 of L293D
+
+// Ultrasonic rangefinder 
+#define trigPin 12 // ping sender
+#define echoPin 13 // ping detector
+
+// turn counter
+int turn = 0;
+
+// This will only run once
+void setup() {
+  // Set pins as outputs
+  Serial.begin(9600);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  
+  pinMode(motorPin1, OUTPUT);
+  pinMode(motorPin2, OUTPUT);
+  pinMode(motorPin3, OUTPUT);
+  pinMode(motorPin4, OUTPUT);
+}
+
+void loop() {
+  // calculate distance from object
+  float duration, distance;
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  
+  duration = pulseIn(echoPin, HIGH);
+  distance = (duration/2) * 0.0344;
+
+  forward();
+  
+  // if object is detected backup and turn before continuing forward
+  if (distance < 20 && (turn % 2 == 0))
+  {
+    backwards();
+    delay(2000);
+    turnRight();
+    delay(500);
+    turn++;
+    
+    // Print distance to serial output
+    Serial.print("Distance = ");
+    Serial.print(distance);
+    Serial.println(" cm");
+  }
+  else if (distance < 20 && (turn % 2 == 1))
+  {
+    backwards();
+    delay(2000);
+    turnLeft();
+    delay(500);
+    turn++;
+    
+    // Print distance to serial output
+    Serial.print("Distance = ");
+    Serial.print(distance);
+    Serial.println(" cm");
+  }
+  else
+  {
+    forward();
+  }
+  // delay(500);
+}
+
+// Drives motor forward
+void forward()
+{
+  digitalWrite(motorPin1, HIGH);
+  digitalWrite(motorPin2, LOW);
+  digitalWrite(motorPin3, LOW);
+  digitalWrite(motorPin4, HIGH);
+}
+
+// Drives motor backwards
+void backwards()
+{
+  digitalWrite(motorPin1, LOW);
+  digitalWrite(motorPin2, HIGH);
+  digitalWrite(motorPin3, HIGH);
+  digitalWrite(motorPin4, LOW);
+}
+
+// Left turn
+void turnLeft()
+{
+  digitalWrite(motorPin1, LOW);
+  digitalWrite(motorPin2, LOW);
+  digitalWrite(motorPin3, HIGH);
+  digitalWrite(motorPin4, LOW);
+}
+
+// Left right
+void turnRight()
+{
+  digitalWrite(motorPin1, LOW);
+  digitalWrite(motorPin2, HIGH);
+  digitalWrite(motorPin3, LOW);
+  digitalWrite(motorPin4, LOW);
+}
+
+// Stop
+
+void stopCar()
+{
+  digitalWrite(motorPin1, LOW);
+  digitalWrite(motorPin2, LOW);
+  digitalWrite(motorPin3, LOW);
+  digitalWrite(motorPin4, LOW);
+}
